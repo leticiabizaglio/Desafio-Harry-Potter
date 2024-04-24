@@ -51,6 +51,15 @@ app.get('/bruxo/:id', async (req, res) => {
 app.post('/bruxos', async (req, res) => {
     try{
         const {nome, idade, casa, habilidade, status_sangue, patrono} = req.body;
+
+        if(status_sangue === 'puro' || status_sangue === 'mestiço' || status_sangue === 'ruim'){
+            return res.status(400).send({message: 'Status de sangue inválido'});
+        } 
+        
+        if(casa === 'Grifinória' || casa === 'Sonserina' || casa === 'Lufa-Lufa' || casa === 'Corvinal '){
+            return res.status(400).send({message: 'Casa inválida'});
+        }
+
         await pool.query('INSERT INTO bruxos (nome, idade, casa, habilidade, status_sangue, patrono) VALUES ($1, $2, $3, $4, $5, $6)', [nome, idade, casa, habilidade, status_sangue, patrono]);
         res.status(201).send({message: 'Bruxo adicionado com sucesso'});
     } catch(error){
@@ -92,9 +101,18 @@ app.delete('/bruxos/:id', async (req, res) => {
 app.get('/varinhas', async (req, res) => {
     try{
         const resultado = await pool.query('SELECT * FROM varinhas');
+        const varinhas = resultado.rows.map(varinha => {
+            return {
+                id: varinha.id,
+                material: varinha.material,
+                comprimento: varinha.comprimento,
+                nucleo: varinha.nucleo,
+                data_fabricacao: new Date(varinha.data_fabricacao).toLocaleDateString()
+            };
+        });
         res.json({
             // total: resultado.rows,
-            varinhas: resultado.rows
+            varinhas: varinhas
         })
     } catch(error){
         console.log("Erro ao obter todas as varinhas: " + error);
