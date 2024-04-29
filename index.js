@@ -47,19 +47,35 @@ app.get('/bruxo/:id', async (req, res) => {
     }
 });
 
+// Rota para buscar um bruxo especifico pelo nome
+app.get('/bruxo/nome/:nome', async (req, res) => {
+    try{
+        const {nome} = req.params;
+        const resultado = await pool.query('SELECT * FROM bruxos WHERE nome = $1', [nome]);
+        if(!resultado.rowCount === 0){
+            res.status(404).send({message: 'Bruxo não encontrado'});
+        } else {
+            res.status(200).send({message: 'Bruxo encontrado', bruxo: resultado.rows[0]});
+    } 
+    } catch(error){
+        console.log("Erro ao obter o bruxo: " + error);
+        res.sendStatus(500).send("Erro ao obter o bruxo");
+    }
+});
+
+
 // Rota para adicionar um novo bruxo
 app.post('/bruxos', async (req, res) => {
     try{
         const {nome, idade, casa, habilidade, status_sangue, patrono} = req.body;
 
-        if(status_sangue === 'puro' || status_sangue === 'mestiço' || status_sangue === 'ruim'){
+        if(status_sangue !== 'Puro' && status_sangue !== 'Mestiço' && status_sangue !== 'Ruim'){
             return res.status(400).send({message: 'Status de sangue inválido'});
         } 
         
-        if(casa === 'Grifinória' || casa === 'Sonserina' || casa === 'Lufa-Lufa' || casa === 'Corvinal '){
+        if(casa !== 'Grifinória' && casa !== 'Sonserina' && casa !== 'Lufa-Lufa' && casa !== 'Corvinal'){
             return res.status(400).send({message: 'Casa inválida'});
         }
-
         await pool.query('INSERT INTO bruxos (nome, idade, casa, habilidade, status_sangue, patrono) VALUES ($1, $2, $3, $4, $5, $6)', [nome, idade, casa, habilidade, status_sangue, patrono]);
         res.status(201).send({message: 'Bruxo adicionado com sucesso'});
     } catch(error){
@@ -135,6 +151,22 @@ app.get('/varinhas/:id', async (req, res) => {
         res.sendStatus(500).send("Erro ao obter o bruxo");
     }
 });
+
+// Rota para buscar uma varinha especifica pelo nome
+app.get ('/varinhas/nome/:nome', async (req, res) => {
+    try{
+        const {nome} = req.params;
+        const resultado = await pool.query('SELECT * FROM varinhas WHERE nome = $1', [nome]);
+        if(!resultado.rowCount === 0){
+            res.status(404).send({message: 'Varinha não encontrada'});
+        } else {
+            res.status(200).send({message: 'Varinha encontrada', varinha: resultado.rows[0]});
+    } 
+    } catch(error){
+        console.log("Erro ao obter a varinha: " + error);
+        res.sendStatus(500).send("Erro ao obter a varinha");
+    }
+})
 
 // Rota para adicionar uma nova varinha
 app.post('/varinhas', async (req, res) => {
